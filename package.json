@@ -1,0 +1,15 @@
+{
+    "name": "my-frontend-app",
+    "version": "1.0.0",
+    "description": "簡單的前端 UI 應用程式",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "aws-sdk": "^2.1692.0",
+        "express": "^4.17.1",
+        "multer": "^1.4.5-lts.2",
+        "my-frontend-app": "file:"
+    }
+}

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡單前端 UI + 錄音播放</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>請錄音</h1>
+        <p>這是一個部署在 AWS EC2 上的簡單頁面！</p>
+
+        <hr style="margin: 20px 0;">
+
+        <div class="record-section">
+            <h2>錄音功能</h2>
+            <p id="timer" class="timer">00:00</p>
+
+            <div class="input-group">
+                <label for="customerId">Customer ID：</label>
+                <input type="text" id="customerId" placeholder="請輸入 ID">
+            </div>
+
+            <div class="button-group">
+                <button id="startBtn" class="start-btn">開始錄音</button>
+                <button id="stopBtn" class="stop-btn" disabled>停止錄音並上傳</button>
+            </div>
+        </div>
+
+        <div id="player-card" class="player-card">
+            <h3>播放最新音訊</h3>
+            <div id="player"></div>
+        </div>
+    </div>
+
+    <script>
+    let mediaRecorder;
+    let audioChunks = [];
+    let timerInterval;
+    let seconds = 0;
+
+    function formatTime(sec) {
+        const m = String(Math.floor(sec / 60)).padStart(2, '0');
+        const s = String(sec % 60).padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const timer = document.getElementById('timer');
+
+    startBtn.onclick = async () => {
+        const customerId = document.getElementById('customerId').value.trim();
+        if (!customerId) {
+            alert('請先輸入 Customer ID！');
+            return;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.start();
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+
+        seconds = 0;
+        timer.textContent = '00:00';
+        timerInterval = setInterval(() => {
+            seconds++;
+            timer.textContent = formatTime(seconds);
+        }, 1000);
+    };
+
+    stopBtn.onclick = () => {
+        mediaRecorder.stop();
+        mediaRecorder.onstop = async () => {
+            clearInterval(timerInterval);
+            timer.textContent = '00:00';
+
+            const customerId = document.getElementById('customerId').value.trim();
+            const audioBlob = new Blob(audioChunks, { type: 'audio/flac' });
+
+            const formData = new FormData();
+            formData.append('audio', audioBlob, `${customerId}.flac`);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('上傳成功！等待音訊生成...');
+                    setTimeout(fetchAndPlayAudio, 30000);  // 10秒後嘗試播放最新音檔
+                } else {
+                    alert('上傳失敗！');
+                }
+            } catch (error) {
+                console.error('錯誤:', error);
+                alert('上傳錯誤！');
+            }
+
+            audioChunks = [];
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        };
+    };
+
+    // 直接從後端獲取最新的音檔並播放
+    async function fetchAndPlayAudio() {
+        try {
+            const response = await fetch('/audio/latest');  // 向後端請求最新音檔
+
+            if (!response.ok) {
+                throw new Error('無法取得最新音檔');
+            }
+
+            // 播放音訊
+            const playerDiv = document.getElementById('player');
+            playerDiv.innerHTML = '';  // 清空播放器內容
+
+            const audio = document.createElement('audio');
+            audio.src = URL.createObjectURL(await response.blob());  // 使用 blob 來播放音檔
+            audio.autoplay = true;  // 添加自動播放屬性
+            playerDiv.appendChild(audio);
+
+        } catch (error) {
+            console.error('取得音訊失敗:', error);
+            alert('取得音訊失敗，請稍後再試');
+        }
+    }
+    </script>
+</body>
+</html>

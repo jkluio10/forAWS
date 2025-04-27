@@ -1,0 +1,87 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f7f9fc;
+}
+
+.container {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 400px;
+}
+
+h1, h2 {
+    margin-bottom: 10px;
+}
+
+.timer {
+    font-size: 32px;
+    font-weight: bold;
+    color: #28a745;
+    margin: 20px 0;
+}
+
+.input-group {
+    margin: 20px 0;
+}
+
+.input-group input {
+    padding: 10px;
+    font-size: 16px;
+    width: 80%;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.button-group {
+    margin-top: 20px;
+}
+
+.start-btn, .stop-btn {
+    padding: 12px 20px;
+    font-size: 16px;
+    margin: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.start-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.start-btn:hover {
+    background-color: #0056b3;
+}
+
+.stop-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.stop-btn:hover {
+    background-color: #b52a2a;
+}
+
+.player-card {
+    margin-top: 30px;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+audio {
+    width: 100%;
+    margin-top: 10px;
+}
